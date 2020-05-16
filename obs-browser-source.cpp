@@ -350,6 +350,8 @@ void BrowserSource::SetShowing(bool showing)
 			DestroyBrowser(true);
 		}
 	} else {
+		if (active_even_background)
+			showing = true;
 		ExecuteOnBrowser(
 			[=](CefRefPtr<CefBrowser> cefBrowser) {
 				CefRefPtr<CefProcessMessage> msg =
@@ -424,6 +426,7 @@ void BrowserSource::Update(obs_data_t *settings)
 		bool n_shutdown;
 		bool n_restart;
 		bool n_reroute;
+		bool n_bg_active;
 		std::string n_url;
 		std::string n_css;
 
@@ -434,6 +437,7 @@ void BrowserSource::Update(obs_data_t *settings)
 		n_fps = (int)obs_data_get_int(settings, "fps");
 		n_shutdown = obs_data_get_bool(settings, "shutdown");
 		n_restart = obs_data_get_bool(settings, "restart_when_active");
+		n_bg_active = obs_data_get_bool(settings, "active_even_background");
 		n_css = obs_data_get_string(settings, "css");
 		n_url = obs_data_get_string(settings,
 					    n_is_local ? "local_file" : "url");
@@ -484,7 +488,8 @@ void BrowserSource::Update(obs_data_t *settings)
 		    n_height == height && n_fps_custom == fps_custom &&
 		    n_fps == fps && n_shutdown == shutdown_on_invisible &&
 		    n_restart == restart && n_css == css && n_url == url &&
-		    n_reroute == reroute_audio) {
+		    n_reroute == reroute_audio &&
+		    n_bg_active == active_even_background) {
 			return;
 		}
 
@@ -494,6 +499,7 @@ void BrowserSource::Update(obs_data_t *settings)
 		fps = n_fps;
 		fps_custom = n_fps_custom;
 		shutdown_on_invisible = n_shutdown;
+		active_even_background = n_bg_active;
 		reroute_audio = n_reroute;
 		restart = n_restart;
 		css = n_css;

@@ -122,6 +122,7 @@ static void browser_source_get_defaults(obs_data_t *settings)
 #endif
 	obs_data_set_default_bool(settings, "shutdown", false);
 	obs_data_set_default_bool(settings, "restart_when_active", false);
+	obs_data_set_default_bool(settings, "active_even_background", false);
 	obs_data_set_default_string(settings, "css", default_css);
 	obs_data_set_default_bool(settings, "reroute_audio", false);
 }
@@ -199,7 +200,9 @@ static obs_properties_t *browser_source_get_properties(void *data)
 				obs_module_text("ShutdownSourceNotVisible"));
 	obs_properties_add_bool(props, "restart_when_active",
 				obs_module_text("RefreshBrowserActive"));
-
+	obs_properties_add_bool(props, "active_even_background",
+				obs_module_text("[YC patch] Keep active while off scene, to prevent Twitch switch lower resolution"));
+				
 	obs_properties_add_button(
 		props, "refreshnocache", obs_module_text("RefreshNoCache"),
 		[](obs_properties_t *, obs_property_t *, void *data) {
@@ -335,8 +338,7 @@ void RegisterBrowserSource()
 #if CHROME_VERSION_BUILD >= 3683
 			    OBS_SOURCE_AUDIO |
 #endif
-			    OBS_SOURCE_CUSTOM_DRAW | OBS_SOURCE_INTERACTION |
-			    OBS_SOURCE_DO_NOT_DUPLICATE;
+			    OBS_SOURCE_CUSTOM_DRAW | OBS_SOURCE_INTERACTION;
 	info.get_properties = browser_source_get_properties;
 	info.get_defaults = browser_source_get_defaults;
 	info.icon_type = OBS_ICON_TYPE_BROWSER;
@@ -402,6 +404,7 @@ void RegisterBrowserSource()
 	info.show = [](void *data) {
 		static_cast<BrowserSource *>(data)->SetShowing(true);
 	};
+
 	info.hide = [](void *data) {
 		static_cast<BrowserSource *>(data)->SetShowing(false);
 	};
@@ -469,6 +472,7 @@ static void handle_obs_frontend_event(enum obs_frontend_event event, void *)
 		DispatchJSEvent("obsReplaybufferStopped", "");
 		break;
 	case OBS_FRONTEND_EVENT_SCENE_CHANGED: {
+		//break; //override useless
 		OBSSource source = obs_frontend_get_current_scene();
 		obs_source_release(source);
 

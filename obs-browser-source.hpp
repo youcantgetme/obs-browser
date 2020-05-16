@@ -61,6 +61,7 @@ struct BrowserSource {
 	int fps = 0;
 	bool restart = false;
 	bool shutdown_on_invisible = false;
+	bool active_even_background = false;
 	bool is_local = false;
 	bool first_update = true;
 	bool reroute_audio = true;
